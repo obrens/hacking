@@ -787,6 +787,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ConnectionPrefab: {fileID: 1463746385360779596, guid: 6690f9bf18c94ca929817728c2463d71,
     type: 3}
+  NodePrefabs:
+  - Type: 0
+    Prefab: {fileID: 1091958918256444751, guid: 19320b8efeeb61213b5480371784da11,
+      type: 3}
+  - Type: 1
+    Prefab: {fileID: 1502799427295007644, guid: b5a5a5f437ea56d11b65f68ac6e24a85,
+      type: 3}
+  - Type: 2
+    Prefab: {fileID: 6299026329132445924, guid: acd15c141bedc757b8364c06e8d05f14,
+      type: 3}
+  - Type: 3
+    Prefab: {fileID: 4154108684408322506, guid: ebfc3290740fd4d46ab2c6b245d71f7e,
+      type: 3}
+  - Type: 4
+    Prefab: {fileID: 5670544850715726567, guid: 41556b20a682564508b3880c99f07144,
+      type: 3}
 --- !u!114 &1509348083
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -800,6 +816,51 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Network:
+    Nodes:
+    - Type: 1
+      Risk: 0
+      X: -3.63
+      Y: 3.51
+    - Type: 2
+      Risk: 0
+      X: 5.55
+      Y: 2.64
+    - Type: 4
+      Risk: 0
+      X: -1.8
+      Y: 0.55
+    - Type: 0
+      Risk: 0
+      X: -6.75
+      Y: 1.22
+    - Type: 3
+      Risk: 0
+      X: 5.39
+      Y: -3.08
+    - Type: 1
+      Risk: 0
+      X: -5.24
+      Y: -1.23
+    - Type: 1
+      Risk: 0
+      X: 1.81
+      Y: 3.19
+    - Type: 1
+      Risk: 0
+      X: -1.4
+      Y: -3.56
+    - Type: 1
+      Risk: 0
+      X: 1.27
+      Y: 0.25
+    - Type: 1
+      Risk: 0
+      X: 3.9
+      Y: -0.05
+    - Type: 2
+      Risk: 0
+      X: 6.89
+      Y: -0.24
     HardcodedNodes:
     - {fileID: 1812424425}
     - {fileID: 7115006}

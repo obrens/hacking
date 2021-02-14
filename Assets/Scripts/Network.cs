@@ -6,7 +6,7 @@ using UnityEngine;
 [Serializable]
 public class Network 
 {
-    //public List<Node> Nodes;
+    public List<Node> Nodes;
     public List<GameObject> HardcodedNodes;
     public List<Connection> Connections;
 }

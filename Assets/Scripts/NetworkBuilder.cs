@@ -8,6 +8,8 @@ public class NetworkBuilder : MonoBehaviour
 
     private void Start()
     {
-        GetComponent<NetworkDrawer>().DrawConnections(Network);
+        NetworkDrawer drawer = GetComponent<NetworkDrawer>();
+        drawer.DrawNodes(Network);
+        drawer.DrawConnections(Network);
     }
 }

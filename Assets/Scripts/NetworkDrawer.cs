@@ -1,11 +1,36 @@
-﻿using System.Collections;
+﻿using System;
+using System.Linq;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class NetworkDrawer : MonoBehaviour
 {
+    [Serializable]
+    public struct NodeTypePrefabPair 
+    {
+        public NodeType Type;
+        public GameObject Prefab;
+    }
+    public List<NodeTypePrefabPair> NodePrefabs;
     public GameObject ConnectionPrefab;
-    //private Dictionary<Node, NodeController> nodeDictionary;
+
+    private Dictionary<NodeType, GameObject> nodeTypePrefabDictionary;
+    private Dictionary<Node, NodeController> nodeDictionary = new Dictionary<Node, NodeController>();
+
+    private void Awake()
+    {
+        nodeTypePrefabDictionary = NodePrefabs.ToDictionary(pair => pair.Type, pair => pair.Prefab);
+    }
+
+    public void DrawNodes(Network network)
+    {
+        foreach (Node node in network.Nodes)
+        {
+            GameObject nodeObject = Instantiate(nodeTypePrefabDictionary[node.Type], new Vector3(node.X, node.Y, 0f), Quaternion.identity) as GameObject;
+            nodeDictionary[node] = nodeObject.GetComponent<NodeController>();
+        }
+    }
 
     public void DrawConnections(Network network) 
     {
