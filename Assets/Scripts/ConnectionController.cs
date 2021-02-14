@@ -5,16 +5,28 @@ using UnityEngine;
 
 public class ConnectionController : MonoBehaviour
 {
+    #region Logical state
+    public Connection StaticModel;
+    #endregion
+
     public enum Direction {FORWARD, BACKWARD};
 
     public NodeController Node1Controller;
     public NodeController Node2Controller;
-    private LineRenderer renderer;
+    private LineRenderer _lineRenderer;
+    // Lazy initialization
+    private LineRenderer lineRenderer => (null == _lineRenderer) ? (_lineRenderer = GetComponent<LineRenderer>()) : _lineRenderer;
 
-    private void Start() 
+    public void SetNodeControllers(NodeController nodeController1, NodeController nodeController2) 
     {
-        renderer = GetComponent<LineRenderer>();
-        renderer.SetPositions(new Vector3 [] {});
+        if (null != Node1Controller || null != Node2Controller) throw new Exception("Connection already has nodes set!");
+        Node1Controller = nodeController1;
+        Node2Controller = nodeController2;
+        lineRenderer.SetPositions(new Vector3 [] 
+            {
+                Node1Controller.transform.position, 
+                Node2Controller.transform.position
+            });
     }
 
     public NodeController OtherNode(NodeController thisNode) 

@@ -5,4 +5,9 @@ using UnityEngine;
 public class NetworkBuilder : MonoBehaviour
 {
     public Network Network;
+
+    private void Start()
+    {
+        GetComponent<NetworkDrawer>().DrawConnections(Network);
+    }
 }
