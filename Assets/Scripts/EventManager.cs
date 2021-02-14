@@ -3,8 +3,8 @@ using UnityEngine.Events;
 using System.Collections;
 using System.Collections.Generic;
 
-public class EventManager : MonoBehaviour {
-
+public class EventManager : MonoBehaviour 
+{
     private Dictionary <string, UnityEvent> eventDictionary;
 
     private static EventManager eventManager;

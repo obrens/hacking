@@ -9,19 +9,24 @@ public class GameManager : MonoBehaviour
     
     void Awake() {
         if(Instance == null) {
+
             Instance = this;
-        } else if(Instance != this) {
+        } 
+        else if(Instance != this) 
+        {
             Destroy(this);
         }
         DontDestroyOnLoad(gameObject);
         EventManager.StartListening("start level", StartLevel);
     }
 
-    private void OnDestroy() {
+    private void OnDestroy() 
+    {
         EventManager.StopListening("start level", StartLevel);
     }
     
-    private void StartLevel() {
+    private void StartLevel() 
+    {
         SceneManager.LoadScene("Level");
     }
 }
