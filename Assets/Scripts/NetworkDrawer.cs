@@ -6,6 +6,7 @@ using UnityEngine;
 
 public class NetworkDrawer : MonoBehaviour
 {
+
     [Serializable]
     public struct NodeTypePrefabPair 
     {
@@ -17,13 +18,22 @@ public class NetworkDrawer : MonoBehaviour
 
     private Dictionary<NodeType, GameObject> nodeTypePrefabDictionary;
     private Dictionary<Node, NodeController> nodeDictionary = new Dictionary<Node, NodeController>();
+    private Network network;
 
     private void Awake()
     {
         nodeTypePrefabDictionary = NodePrefabs.ToDictionary(pair => pair.Type, pair => pair.Prefab);
     }
 
-    public void DrawNodes(Network network)
+    public void DrawNetwork(Network network) 
+    {
+        Debug.Log("NetworkDrawer.DrawNetwork> started");
+        this.network = network;
+        DrawNodes();
+        DrawConnections();
+    }
+
+    private void DrawNodes()
     {
         foreach (Node node in network.Nodes)
         {
@@ -32,7 +42,7 @@ public class NetworkDrawer : MonoBehaviour
         }
     }
 
-    public void DrawConnections(Network network) 
+    private void DrawConnections() 
     {
         foreach (Connection connection in network.Connections)
         {
@@ -50,8 +60,11 @@ public class NetworkDrawer : MonoBehaviour
 
     private void SetControllerCrossReferences(ConnectionController connectionController) 
     {
-        NodeController nodeController1 = connectionController.StaticModel.Node1.GetComponent<NodeController>();
-        NodeController nodeController2 = connectionController.StaticModel.Node2.GetComponent<NodeController>();
+        if (connectionController == null) Debug.Log("connectionController");
+        if (connectionController?.StaticModel == null) Debug.Log("StaticModel");
+        if (connectionController?.StaticModel?.Node1 == null) Debug.Log("Node1");
+        NodeController nodeController1 = nodeDictionary[connectionController.StaticModel.Node1].GetComponent<NodeController>();
+        NodeController nodeController2 = nodeDictionary[connectionController.StaticModel.Node2].GetComponent<NodeController>();
         nodeController1.Connections.Add(connectionController);
         nodeController2.Connections.Add(connectionController);
         connectionController.SetNodeControllers(nodeController1, nodeController2);
