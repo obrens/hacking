@@ -15,7 +15,6 @@ public static class NodePlacer
 
     public static List<Node> DetermineNodeCoordinates(Node[][] nodeGrid, int outerRowCellCount, int middleRowCellCount) 
     {
-        Debug.Log("NodePlacer.DetermineNodeCoordinates> started");
         Random.InitState((int)System.DateTime.Now.Ticks);
         List<Node> nodes = new List<Node>();
 

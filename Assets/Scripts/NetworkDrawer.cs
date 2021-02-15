@@ -28,7 +28,6 @@ public class NetworkDrawer : MonoBehaviour
 
     public void DrawNetwork(Network network) 
     {
-        Debug.Log("NetworkDrawer.DrawNetwork> started");
         this.network = network;
         DrawNodes();
         DrawConnections();

@@ -37,7 +37,6 @@ public class GridBuilder : MonoBehaviour
 
     private void Start()
     {
-        Debug.Log("GridBuilder.Start> started");
         Random.InitState((int)System.DateTime.Now.Ticks);
         levelSettings = GameManager.Instance.LevelSettings;
         InitializeNodeGrid();

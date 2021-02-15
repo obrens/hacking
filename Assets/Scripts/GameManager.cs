@@ -43,7 +43,7 @@ public class GameManager : MonoBehaviour
 public class LevelSettings
 {
     // 5 - 15
-    public int NodeCount = 10;
+    public int NodeCount = 9;
     // 1 - 4
     public int TreasureNodeCount = 2;
     // 1 - 2

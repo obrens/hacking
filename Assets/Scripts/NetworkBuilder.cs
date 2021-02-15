@@ -17,7 +17,6 @@ public class NetworkBuilder : MonoBehaviour
 
     public void BuildNetwork(Node[][] nodeGrid, bool gridIsFat, Cell startCell, int outerRowCellCount, int middleRowCellCount)
     {
-        Debug.Log("NetworkBuilder.BuildNetwork> started");
         this.nodeGrid = nodeGrid;
         this.gridIsFat = gridIsFat;
         this.startCell = startCell;
