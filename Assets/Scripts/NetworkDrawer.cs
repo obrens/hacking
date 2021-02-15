@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+// This class instantiates node and connection objects on the scene, and draws the connections.
 public class NetworkDrawer : MonoBehaviour
 {
 
@@ -63,6 +64,8 @@ public class NetworkDrawer : MonoBehaviour
         if (connectionController == null) Debug.Log("connectionController");
         if (connectionController?.StaticModel == null) Debug.Log("StaticModel");
         if (connectionController?.StaticModel?.Node1 == null) Debug.Log("Node1");
+        if (nodeDictionary == null) Debug.Log("nodeDictionary");
+        if (nodeDictionary[connectionController.StaticModel.Node1] == null) Debug.Log("nodeDictionary[connectionController.StaticModel.Node1]");
         NodeController nodeController1 = nodeDictionary[connectionController.StaticModel.Node1].GetComponent<NodeController>();
         NodeController nodeController2 = nodeDictionary[connectionController.StaticModel.Node2].GetComponent<NodeController>();
         nodeController1.Connections.Add(connectionController);

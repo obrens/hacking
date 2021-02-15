@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+// This class generated the nodes and places then in a logical hex grid.
 public class GridBuilder : MonoBehaviour
 {
     private LevelSettings levelSettings;

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 
+// This class contains some methods to help with network/grid manipulation.
 public static class NetworkAlgorithms
 {
     public static T RandomFrom<T>(T[] objects) => objects[Random.Range(0, objects.Length)];
@@ -94,65 +95,5 @@ public static class NetworkAlgorithms
             }
         }
         return neighbours;
-    }
-
-    public static List<Cell> FindGridPath(Node[][] nodeGrid, bool gridIsFat, int row1, int column1, int row2, int column2) 
-    {
-        Debug.Log("NetworkAlgorithms.FindGridPath> started");
-        List<Cell> path = new List<Cell>();
-        Cell currentCell = new Cell(row: row1, column: column1);
-        path.Add(currentCell);
-        while (currentCell.row != row2 || currentCell.column != column2) 
-        {
-            List<Cell> bestTries = new List<Cell>();
-            if (row2 < currentCell.row)
-            {
-                bestTries.Add(new Cell(currentCell.row - 1, currentCell.column));
-            }
-            if (row2 > currentCell.row)
-            {
-                bestTries.Add(new Cell(currentCell.row + 1, currentCell.column));
-            }
-            if (column2 < currentCell.column)
-            {
-                bestTries.Add(new Cell(currentCell.row, currentCell.column - 1));
-            }
-            if (column2 > currentCell.column)
-            {
-                bestTries.Add(new Cell(currentCell.row, currentCell.column + 1));
-            }
-            Debug.Log("current> " + currentCell.row + "\t" + currentCell.column);
-            Debug.Log("endgoal> " + row2 + "\t" + column2);
-            Debug.Log("bestTries.Count> " + bestTries.Count);
-
-            // In case we got to our goal node
-            if (bestTries.Count == 1 && bestTries[0].row == row2 && bestTries[0].column == column2)
-            {
-                path.Add(bestTries[0]);
-                break;
-            }
-            
-            // Must go around those firewalls
-            bestTries = bestTries.Where<Cell>(cell => NodeType.FIREWALL != nodeGrid[cell.row][cell.column].Type).ToList<Cell>();
-            if (bestTries.Count > 0) 
-            {
-                currentCell = RandomFrom<Cell>(bestTries.ToArray());
-                path.Add(currentCell);
-                continue;
-            }
-
-            List<Cell> otherNeighbours = GetAllNeighbours(nodeGrid, gridIsFat, currentCell.row, currentCell.column);
-            Cell[] goodNeighbours = otherNeighbours.Where<Cell>(cell => NodeType.FIREWALL != nodeGrid[cell.row][cell.column].Type).ToArray<Cell>();
-            if (goodNeighbours.Length == 0)
-            {
-                Debug.LogWarning("There were no good neighbours!");
-                currentCell = RandomFrom(otherNeighbours.ToArray());
-                path.Add(currentCell);
-                continue;
-            }
-            currentCell = RandomFrom<Cell>(goodNeighbours);
-            path.Add(currentCell);
-        }
-        return path;
     }
 }

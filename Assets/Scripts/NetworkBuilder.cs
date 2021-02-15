@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+// This class takes a hex grid of nodes and creates a network with exact node positions, and connections between nodes
 public class NetworkBuilder : MonoBehaviour
 {
+    private const int chanceToConnectDenomminator = 2;
     private Node[][] nodeGrid;
     private bool gridIsFat;
     private Cell startCell;
@@ -22,114 +24,180 @@ public class NetworkBuilder : MonoBehaviour
         this.outerRowCellCount = outerRowCellCount;
         this.middleRowCellCount = middleRowCellCount;
 
-        connections = new List<Connection>();
-        NecessaryConnections();
-        OptionalConnections();
-        ConnectDisconnectedNodes();
+        MakeConnections();
+        RemoveConnectionsToEmptyNodes();
         network = new Network();
         network.Connections = connections;
         network.Nodes = NodePlacer.DetermineNodeCoordinates(nodeGrid, outerRowCellCount, middleRowCellCount);
+        //DebugCheckNodes();
         GetComponent<NetworkDrawer>().DrawNetwork(network);
     }
 
-    private void NecessaryConnections() 
+    private void MakeConnections()
     {
-        int row = 0;
-        for (int column = 0; column < outerRowCellCount; column++)
+        connections = new List<Connection>();
+
+        int minColumns = gridIsFat ? outerRowCellCount : middleRowCellCount;
+        Node previousTop = nodeGrid[0][0];
+        Node previousMiddle = nodeGrid[1][0];
+        Node previousBottom = nodeGrid[2][0];
+        Node top = nodeGrid[0][0];
+        Node middle = nodeGrid[1][0];
+        Node bottom = nodeGrid[2][0];
+
+        // Connecting all cells in first column
+        connections.Add(new Connection(top, middle));
+        connections.Add(new Connection(middle, bottom));
+
+        for (int currentColumn = 0; currentColumn < minColumns; currentColumn++)
         {
-            NodeType type = nodeGrid[row][column].Type;
-            if (NodeType.TREASURE == type || NodeType.FIREWALL == type) 
+            top = nodeGrid[0][currentColumn];
+            middle = nodeGrid[1][currentColumn];
+            bottom = nodeGrid[2][currentColumn];
+
+            List<int> rows = new List<int>() {0, 1, 2};
+            List<int> connectingNodes = rows
+                .Where(row => NodeType.FIREWALL != nodeGrid[row][currentColumn].Type && NodeType.EMPTY != nodeGrid[row][currentColumn].Type)
+                .ToList<int>();
+
+            void ConnectRowWise(int row) 
             {
-                ConnectionsTo(row, column);
+                //TODO Check if previous nodes were empty before connecting
+                Node previous;
+                switch (row) 
+                {
+                    case 0:
+                        previous = gridIsFat 
+                            ? previousTop
+                            : NetworkAlgorithms.RandomFrom(new Node[] {previousTop, previousMiddle});
+                        connections.Add(new Connection(previous, top));
+                        break;
+                    case 1:
+                        previous = gridIsFat 
+                            ? NetworkAlgorithms.RandomFrom(new Node[] {previousTop, previousMiddle, previousBottom})
+                            : previousMiddle;
+                        connections.Add(new Connection(previous, middle));
+                        break;
+                    case 2:
+                        previous = gridIsFat 
+                            ? previousTop
+                            : NetworkAlgorithms.RandomFrom(new Node[] {previousMiddle, previousBottom});
+                        connections.Add(new Connection(previous, bottom));
+                        break;
+                }
             }
+
+            // Connecting previous to current column at least once
+            int gauranteedConnectionRow = NetworkAlgorithms.RandomFrom(connectingNodes.ToArray());
+            ConnectRowWise(gauranteedConnectionRow);
+            foreach (int connectingNode in connectingNodes) 
+            {
+                if (connectingNode != gauranteedConnectionRow) 
+                {
+                    if (Random.Range(0, chanceToConnectDenomminator) == 0) ConnectRowWise(connectingNode);
+                }
+            }
+
+            // Connect column wise
+            if (connectingNodes.Contains(0) && connectingNodes.Contains(1))
+            {
+                if (Random.Range(0, chanceToConnectDenomminator) == 0) 
+                {
+                    connections.Add(new Connection(top, middle));
+                }
+            }
+            if (connectingNodes.Contains(1) && connectingNodes.Contains(2))
+            {
+                if (Random.Range(0, chanceToConnectDenomminator) == 0) 
+                {
+                    connections.Add(new Connection(middle, bottom));
+                }
+            }
+
+            // Connect firewall if present in column
+            List<int> firewallNodes = rows
+                .Where(row => NodeType.FIREWALL != nodeGrid[row][currentColumn].Type && NodeType.EMPTY != nodeGrid[row][currentColumn].Type)
+                .ToList<int>();
+            foreach (int firewallRow in firewallNodes)
+            {
+                ConnectRowWise(firewallRow);
+            }
+
+            previousTop = top;
+            previousMiddle = middle;
+            previousBottom = bottom;
         }
-        row = 1;
-        for (int column = 0; column < middleRowCellCount; column++)
+
+        // Connect last column
+        if (gridIsFat) 
         {
-            NodeType type = nodeGrid[row][column].Type;
-            if (NodeType.TREASURE == type || NodeType.FIREWALL == type) 
-            {
-                ConnectionsTo(row, column);
-            }
+            middle = nodeGrid[1][middleRowCellCount - 1];
+            Node previous = NetworkAlgorithms.RandomFrom(new Node[] {previousTop, previousMiddle, previousBottom});
+            connections.Add(new Connection(previous, middle));
         }
-        row = 2;
-        for (int column = 0; column < outerRowCellCount; column++)
+        else
         {
-            NodeType type = nodeGrid[row][column].Type;
-            if (NodeType.TREASURE == type || NodeType.FIREWALL == type) 
-            {
-                ConnectionsTo(row, column);
-            }
+            top = nodeGrid[0][outerRowCellCount - 1];
+            Node previous = NetworkAlgorithms.RandomFrom(new Node[] {previousTop, previousMiddle});
+            connections.Add(new Connection(previous, top));
+
+            bottom = nodeGrid[2][outerRowCellCount - 1];
+            previous = NetworkAlgorithms.RandomFrom(new Node[] {previousMiddle, previousBottom});
+            connections.Add(new Connection(previous, bottom));
         }
     }
 
-    private void ConnectionsTo(int row, int column)
+    private void RemoveConnectionsToEmptyNodes()
     {
-        List<Cell> cells = NetworkAlgorithms.FindGridPath(nodeGrid, gridIsFat, startCell.row, startCell.column, row, column);
-        Node previousNode = nodeGrid[startCell.row][startCell.column];
-        for (int i = 1; i < cells.Count; i++)
-        {
-            Cell cell = cells[i];
-            Node potentialNode = nodeGrid[cell.row][cell.column];
-            if (NodeType.EMPTY == potentialNode.Type)
-            {
-                continue;
-            }
-            Connection connection = new Connection(previousNode, potentialNode);
-            connections.Add(connection);
-            previousNode = potentialNode;
-        }
-    }
-
-    private void OptionalConnections()
-    {
-        //TODO Just randomly make connections between nodes from neighbouring cells with a percentage chance
-    }
-
-    // Goes through all the nodes, and if any one is disconnected from all other nodes, just connects it randomly with a neighbour
-    // This method is in O(2) time with regard to the number of nodes.
-    private void ConnectDisconnectedNodes()
-    {
-        int row = 0;
-        for (int column = 0; column < outerRowCellCount; column++)
-        {
-            Node node = nodeGrid[row][column];
-            ConnectIfDisconnected(node, row, column);
-        }
-        row = 1;
-        for (int column = 0; column < middleRowCellCount; column++)
-        {
-            Node node = nodeGrid[row][column];
-            ConnectIfDisconnected(node, row, column);
-        }
-        row = 2;
-        for (int column = 0; column < outerRowCellCount; column++)
-        {
-            Node node = nodeGrid[row][column];
-            ConnectIfDisconnected(node, row, column);
-        }
-    }
-
-    private void ConnectIfDisconnected(Node node, int row, int column)
-    {
-        bool connected = false;
+        connections = connections.Where(connection => NodeType.EMPTY != connection.Node1.Type && NodeType.EMPTY != connection.Node2.Type).ToList();
+        /*List<Connection> badConnections;
         foreach (Connection connection in connections)
         {
-            if (connection.Node1 == node || connection.Node2 == node) connected = true;
-        }
-
-        if(!connected)
-        {
-            List<Cell> neighbouringCells = NetworkAlgorithms.GetAllNeighbours(nodeGrid, gridIsFat, row, column);
-            Cell[] nonEmptyCells = neighbouringCells.Where(cell => NodeType.EMPTY == nodeGrid[cell.row][cell.column].Type).ToArray<Cell>();
-            if (nonEmptyCells.Length > 0)
+            if (NodeType.EMPTY == connection.Node1.Type)
             {
-                Cell cell = NetworkAlgorithms.RandomFrom(nonEmptyCells);
-                connections.Add(new Connection(node, nodeGrid[cell.row][cell.column]));
+
+            }
+        }*/
+    }
+
+    private void DebugCheckNodes()
+    {
+        foreach (Connection connection in connections)
+        {
+            bool node1IsPresent = false;
+            foreach (Node node in network.Nodes)
+            {
+                if (node == connection.Node1) 
+                {
+                    node1IsPresent = true;
+                    break;
+                }
+            }
+            if (node1IsPresent)
+            {
+                Debug.Log("\n1 is present> " + connection.Node1.Type.ToString() + "\n");
             }
             else
             {
-                Debug.LogWarning("Cell had non non-empty neighbours!");
+                Debug.Log("\n1 is NOT present> " + connection.Node1.Type.ToString() + "\n");
+            }
+
+            bool node2IsPresent = false;
+            foreach (Node node in network.Nodes)
+            {
+                if (node == connection.Node2) 
+                {
+                    node2IsPresent = true;
+                    break;
+                }
+            }
+            if (node2IsPresent)
+            {
+                Debug.Log("\n2 is present> " + connection.Node2.Type.ToString() + "\n");
+            }
+            else
+            {
+                Debug.Log("\n2 is NOT present> " + connection.Node2.Type.ToString() + "\n");
             }
         }
     }
